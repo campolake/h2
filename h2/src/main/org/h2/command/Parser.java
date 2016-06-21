@@ -317,6 +317,11 @@ public class Parser {
         return parsePrepared();
     }
 
+    /**
+     * 先读取一个字符，然后根据该关键字所在的字符是否是指定的关键字，然后调用
+     * 对应的parse方法,,,,z
+     * @return
+     */
     private Prepared parsePrepared() {
         int start = lastParseIndex;
         Prepared c = null;
@@ -3240,6 +3245,7 @@ public class Parser {
         case CHAR_NAME:
             while (true) {
                 type = types[i];
+                //除了CHAR_NAME和CHAR_VALUE之外都是token的分割字符
                 if (type != CHAR_NAME && type != CHAR_VALUE) {
                     break;
                 }
@@ -3472,7 +3478,9 @@ public class Parser {
     public Session getSession() {
         return session;
     }
-
+    /*
+    *将sql转为char数组，解析为types的数组，后续解析时
+     */
     private void initialize(String sql) {
         if (sql == null) {
             sql = "";
@@ -3492,7 +3500,7 @@ public class Parser {
             char c = command[i];
             int type = 0;
             switch (c) {
-            case '/':
+            case '/'://跳过多行注释
                 if (command[i + 1] == '*') {
                     // block comment
                     changed = true;
@@ -3524,7 +3532,7 @@ public class Parser {
                     type = CHAR_SPECIAL_1;
                 }
                 break;
-            case '-':
+            case '-'://单行注释
                 if (command[i + 1] == '-') {
                     // single line comment
                     changed = true;

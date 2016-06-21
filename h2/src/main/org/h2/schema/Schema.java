@@ -567,7 +567,7 @@ public class Schema extends DbObjectBase {
 
     /**
      * Add a table to the schema.
-     *
+     * 创建表时，锁的对象必须是database
      * @param data the create table information
      * @return the created {@link Table} object
      */

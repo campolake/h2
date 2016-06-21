@@ -31,49 +31,55 @@ public class TestInit extends TestBase {
     @Override
     public void test() throws Exception {
 
-        String init1 = getBaseDir() + "/test-init-1.sql";
-        String init2 = getBaseDir() + "/test-init-2.sql";
+//        String init1 = getBaseDir() + "/test-init-1.sql";
+//        String init2 = getBaseDir() + "/test-init-2.sql";
 
         // Create two scripts that we will run via "INIT"
-        FileUtils.createDirectories(FileUtils.getParent(init1));
-
-        Writer w = new OutputStreamWriter(FileUtils.newOutputStream(init1, false));
-
-        PrintWriter writer = new PrintWriter(w);
-        writer.println("create table test(id int identity, name varchar);");
-        writer.println("insert into test(name) values('cat');");
-        writer.close();
-
-        w = new OutputStreamWriter(FileUtils.newOutputStream(init2, false));
-        writer = new PrintWriter(w);
-        writer.println("insert into test(name) values('dog');");
-        writer.close();
+//        FileUtils.createDirectories(FileUtils.getParent(init1));
+//
+//        Writer w = new OutputStreamWriter(FileUtils.newOutputStream(init1, false));
+//
+//        PrintWriter writer = new PrintWriter(w);
+//        writer.println("create table test(id int identity, name varchar);");
+//        writer.println("insert into test(name) values('cat');");
+//        writer.close();
+//
+//        w = new OutputStreamWriter(FileUtils.newOutputStream(init2, false));
+//        writer = new PrintWriter(w);
+//        writer.println("insert into test(name) values('dog');");
+//        writer.close();
 
         // Make the database connection, and run the two scripts
         deleteDb("initDb");
-        Connection conn = getConnection("initDb;" +
-                "INIT=" +
-                "RUNSCRIPT FROM '" + init1 + "'\\;" +
-                "RUNSCRIPT FROM '" + init2 + "'");
+//        Connection conn = getConnection("initDb;" +
+//                "INIT=" +
+//                "RUNSCRIPT FROM '" + init1 + "'\\;" +
+//                "RUNSCRIPT FROM '" + init2 + "'");
 
+        Connection conn = getConnection("initDb;");
         Statement stat = conn.createStatement();
+        stat.executeUpdate("create table test(id int identity, name varchar);");
+        stat.executeUpdate("insert into test(name) values('cat');");
+        stat.executeUpdate("insert into test(name) values('dog');");
 
         // Confirm our scripts have run by loading the data they inserted
         ResultSet rs = stat.executeQuery("select name from test order by name");
 
         assertTrue(rs.next());
-        assertEquals("cat", rs.getString(1));
+        String col1  = rs.getString(1);
+        assertEquals("cat", col1);
 
         assertTrue(rs.next());
-        assertEquals("dog", rs.getString(1));
+        String col2 = rs.getString(1);
+        assertEquals("dog", col2);
 
         assertFalse(rs.next());
 
         conn.close();
         deleteDb("initDb");
 
-        FileUtils.delete(init1);
-        FileUtils.delete(init2);
+//        FileUtils.delete(init1);
+//        FileUtils.delete(init2);
     }
 
 }

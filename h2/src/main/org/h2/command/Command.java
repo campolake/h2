@@ -239,7 +239,7 @@ public abstract class Command implements CommandInterface {
     public int executeUpdate() {
         long start = 0;
         Database database = session.getDatabase();
-        Object sync = database.isMultiThreaded() ? (Object) session : (Object) database;
+        Object sync = database.isMultiThreaded() ? (Object) session : (Object) database;//如果是多线程的，则锁是session，单线程锁为数据库对象
         session.waitIfExclusiveModeEnabled();
         boolean callStop = true;
         boolean writing = !isReadOnly();

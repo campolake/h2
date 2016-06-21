@@ -1392,7 +1392,7 @@ public class Session extends SessionWithState {
     }
 
     /**
-     * Wait if the exclusive mode has been enabled for another session. This
+     * Wait if the exclusive（独有的，排外的） mode has been enabled for another session. This
      * method returns as soon as the exclusive mode has been disabled.
      */
     public void waitIfExclusiveModeEnabled() {

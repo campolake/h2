@@ -122,7 +122,7 @@ public class CreateTable extends SchemaCommand {
                 throw DbException.get(ErrorCode.COLUMN_COUNT_DOES_NOT_MATCH);
             }
         }
-        if (pkColumns != null) {
+        if (pkColumns != null) {//把主键设置为非空
             for (Column c : data.columns) {
                 for (IndexColumn idxCol : pkColumns) {
                     if (c.getName().equals(idxCol.columnName)) {
@@ -134,7 +134,7 @@ public class CreateTable extends SchemaCommand {
         data.id = getObjectId();
         data.create = create;
         data.session = session;
-        Table table = getSchema().createTable(data);
+        Table table = getSchema().createTable(data);//MVTable
         ArrayList<Sequence> sequences = New.arrayList();
         for (Column c : data.columns) {
             if (c.isAutoIncrement()) {
