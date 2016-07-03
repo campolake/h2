@@ -9,9 +9,8 @@ import java.io.File;
  */
 public class CodeNameContext {
 
-    private final String filePath = "D:\\javaout";
-
     private Table table;
+    private String simpleTableName;
     private String tableName;
     private String entityClassName;
     private String repositoryName;
@@ -26,20 +25,31 @@ public class CodeNameContext {
     private String repositoryImplNamespace;
     private String serviceNamespace;
 
+
+    private String basePath;
+    private String entityPath;
+    private String repositoryPath;
+    private String reposotryImplPath;
+    private String repositoryCustomPath;
+    private String servicePath;
+
     /**
      *
      * @param tab 表的名称
      */
-    public CodeNameContext(Table tab)
+    public CodeNameContext(Table tab,String baseFilePath)
     {
         this.table = tab;
+        basePath = baseFilePath;
         tableName = tab.getName();
+        makeSureDir();
         baseNamespace = "com.aims";
-        entityClassName = tableName + "Entity";
-        repositoryName = tableName + "Repository";
-        repositoryCustomeName = tableName + "RepositoryCustom";
-        repositoryImplName = tableName + "RepositoryImpl";
-        serviceName = tableName + "Service";
+        simpleTableName = getTableName(tableName);
+        entityClassName = simpleTableName + "Entity";
+        repositoryName = simpleTableName + "Repository";
+        repositoryCustomeName = simpleTableName + "RepositoryCustom";
+        repositoryImplName = simpleTableName + "RepositoryImpl";
+        serviceName = simpleTableName + "Service";
 
         entityNamespace = baseNamespace + ".entity";
         repositoryNamespace = baseNamespace + ".repository";
@@ -47,10 +57,40 @@ public class CodeNameContext {
         repositoryImplNamespace = baseNamespace + ".impl";
     }
 
+    private  String getTableName(String tableName)
+    {
+        String[] strs= tableName.toLowerCase().split("_");
+        String name = "";
+        for(String s:strs)
+        {
+            name += s.substring(0,1).toUpperCase() + s.substring(1);
+        }
+        return name;
+    }
+
 
     private void makeSureDir()
     {
-        File f1 =  new File(filePath +"\\" + ent)
+        entityPath = basePath + "\\Entity";
+        File f1 =  new File(entityPath);
+        if (!f1.exists())
+            f1.mkdir();
+        repositoryPath = basePath + "\\repository";
+        File f2 =  new File(repositoryPath);
+        if (!f2.exists())
+            f2.mkdir();
+        repositoryCustomPath = basePath + "\\custom";
+        File f3 =  new File(repositoryCustomPath);
+        if (!f3.exists())
+            f3.mkdir();
+        reposotryImplPath = basePath + "\\impl";
+        File f4 =  new File(reposotryImplPath);
+        if (!f4.exists())
+            f4.mkdir();
+        servicePath = basePath + "\\service";
+        File f5 =  new File(servicePath);
+        if (!f5.exists())
+            f5.mkdir();
     }
 
     public String getTableName() {
@@ -155,5 +195,54 @@ public class CodeNameContext {
 
     public void setTable(Table table) {
         this.table = table;
+    }
+
+
+    public String getBasePath() {
+        return basePath;
+    }
+
+    public void setBasePath(String basePath) {
+        this.basePath = basePath;
+    }
+
+    public String getEntityPath() {
+        return entityPath;
+    }
+
+    public void setEntityPath(String entityPath) {
+        this.entityPath = entityPath;
+    }
+
+    public String getRepositoryPath() {
+        return repositoryPath;
+    }
+
+    public void setRepositoryPath(String repositoryPath) {
+        this.repositoryPath = repositoryPath;
+    }
+
+    public String getReposotryImplPath() {
+        return reposotryImplPath;
+    }
+
+    public void setReposotryImplPath(String reposotryImplPath) {
+        this.reposotryImplPath = reposotryImplPath;
+    }
+
+    public String getRepositoryCustomPath() {
+        return repositoryCustomPath;
+    }
+
+    public void setRepositoryCustomPath(String repositoryCustomPath) {
+        this.repositoryCustomPath = repositoryCustomPath;
+    }
+
+    public String getServicePath() {
+        return servicePath;
+    }
+
+    public void setServicePath(String servicePath) {
+        this.servicePath = servicePath;
     }
 }

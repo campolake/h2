@@ -35,7 +35,7 @@ public class CodeGenerator {
             File entityFile = new File(entityFilePath);
             entityFile.mkdir();
             Table tab = t.getValue();
-            CodeNameContext context  = new CodeNameContext(tab);
+            CodeNameContext context  = new CodeNameContext(tab,filePath);
             EntityCode entityCode = new EntityCode(context);
             entityCode.generate();
             RepositoryCode repoCode  = new RepositoryCode(context);

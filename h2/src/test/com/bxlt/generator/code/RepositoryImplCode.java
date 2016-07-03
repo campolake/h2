@@ -14,9 +14,11 @@ public class RepositoryImplCode extends Code {
 
     public RepositoryImplCode(CodeNameContext context) throws IOException {
         super(context);
+        initWriter(context.getReposotryImplPath() + "\\" + context.getRepositoryImplName() + ".java");
+        codeName = context.getRepositoryImplName();
         setPackageName(context.getRepositoryImplNamespace());
-        addImport("com.aims.model.T_File;"); //Entity
-        addImport("com.aims.repository.FileRepositoryCustom;");//interface
+        addImport(context.getEntityNamespace()+"."+context.getEntityClassName()); //Entity
+        addImport(context.getRepositoryCustomeInterfaceNamespace()+"."+context.getRepositoryCustomeName());//interface
         addImport("com.bxlt.jpa.BaseHibernate4QueryDao;");
         addImport("org.springframework.data.domain.Page");
         addImport("org.springframework.data.domain.Pageable");
@@ -30,22 +32,23 @@ public class RepositoryImplCode extends Code {
         print("package "+ "");
         printImport();
         printEmptyLine();
-        String className = codeName + "RepositoryImpl";
-        print("public class " + className);
-        print("{");
+        String className = context.getRepositoryImplName();
+        println("public class " + className);
+        println("{");
+        printEmptyLine();
         printlni1("@Override");
-        printlni1("public Page<"+codeName+"> query(String hql, Map<String, Object> map, Pageable pageable) {");
+        printlni1("public Page<"+ context.getEntityClassName() +"> query(String hql, Map<String, Object> map, Pageable pageable) {");
         printlni2("return this.findEntityObjects(hql, map, pageable);");
         printlni1("}");
         printEmptyLine();
 
         printlni1("@Override");
-        printlni1("public List<"+codeName+"> query(String hql, Map<String, Object> map) {");
+        printlni1("public List<"+context.getEntityClassName()+"> query(String hql, Map<String, Object> map) {");
         printlni2("return this.findEntityObjects(hql, map);");
         printlni1("}");
 
         printEmptyLine();
         println("}");
-
+        flush();
     }
 }

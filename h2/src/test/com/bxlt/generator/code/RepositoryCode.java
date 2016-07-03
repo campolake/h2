@@ -14,6 +14,8 @@ public class RepositoryCode extends Code  {
 
     public  RepositoryCode(CodeNameContext codeNameContext) throws IOException {
         super(codeNameContext);
+        codeName = context.getRepositoryName();
+        initWriter(context.getRepositoryPath() + "\\" + codeName+ ".java");
         setPackageName(codeNameContext.getRepositoryNamespace());
         addImport("org.springframework.data.jpa.repository.JpaSpecificationExecutor");
         addImport("org.springframework.data.jpa.repository.Query;");

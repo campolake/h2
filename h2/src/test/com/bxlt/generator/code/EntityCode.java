@@ -18,7 +18,9 @@ import java.util.Map;
 public class EntityCode extends Code {
 
     public  EntityCode(CodeNameContext codeNameContext) throws IOException {
+
         super(codeNameContext);
+        initWriter(context.getEntityPath() + "\\" + context.getEntityClassName() + ".java");
         setPackageName(codeNameContext.getEntityNamespace());
         addImport("java.util.Date");
         addImport("com.fasterxml.jackson.annotation.JsonFormat");
@@ -36,11 +38,10 @@ public class EntityCode extends Code {
         println("package " + packageName);
         printEmptyLine();
         printImport();
-        String coden = codeName + "Entity";
         printEmptyLine();
         println("@Entity");
-        println("@Table(name = \""+table.getName()+"\")");
-        println("public class " + coden);
+        println("@Table(name = \""+ context.getTableName() +"\")");
+        println("public class " + context.getEntityClassName());
         println("{");
 
 
