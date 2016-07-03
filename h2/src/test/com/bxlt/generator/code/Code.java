@@ -23,6 +23,7 @@ public abstract  class Code {
     CodeNameContext context;
     Writer writer;
     protected Code(CodeNameContext codeNameContext) throws IOException {
+
         writer =  new FileWriter(""+ ".java");
         context = codeNameContext;
         this.table = context.getTable();

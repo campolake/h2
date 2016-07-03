@@ -2,10 +2,14 @@ package com.bxlt.generator.code;
 
 import com.bxlt.generator.Table;
 
+import java.io.File;
+
 /**
  * Created by wangjw on 2016/7/3.
  */
 public class CodeNameContext {
+
+    private final String filePath = "D:\\javaout";
 
     private Table table;
     private String tableName;
@@ -43,6 +47,11 @@ public class CodeNameContext {
         repositoryImplNamespace = baseNamespace + ".impl";
     }
 
+
+    private void makeSureDir()
+    {
+        File f1 =  new File(filePath +"\\" + ent)
+    }
 
     public String getTableName() {
         return tableName;
