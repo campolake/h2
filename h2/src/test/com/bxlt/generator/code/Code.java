@@ -3,9 +3,7 @@ package com.bxlt.generator.code;
 import com.bxlt.generator.Column;
 import com.bxlt.generator.Table;
 
-import java.io.FileWriter;
-import java.io.IOException;
-import java.io.Writer;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,7 +19,8 @@ public abstract  class Code {
     protected List<String> packageImport  = new ArrayList<String>();
     protected String codeName;
     CodeNameContext context;
-    Writer writer;
+    FileOutputStream stream;// provides file access
+    OutputStreamWriter writer;// writes to the file
     protected Code(CodeNameContext codeNameContext) throws IOException {
 
         context = codeNameContext;
@@ -30,7 +29,9 @@ public abstract  class Code {
     }
 
     protected void initWriter(String path) throws IOException {
-        writer = new FileWriter(path);
+//        writer = new FileWriter(path);
+        stream = new FileOutputStream(path);
+        writer = new OutputStreamWriter(stream,"UTF-8");
     }
 
     protected  void printImport() throws IOException {
@@ -69,9 +70,9 @@ public abstract  class Code {
         this.codeName = codeName;
     }
 
-    protected   void print(String code) throws IOException {
-        writer.write(code);
-    }
+//    protected   void print(String code) throws IOException {
+//        writer.write(code);
+//    }
 
     protected void println(String code) throws IOException {
         writer.write(code);
@@ -100,6 +101,8 @@ public abstract  class Code {
 
     public void flush() throws IOException {
 //        writer.close();
-        writer.flush();
+//        writer.flush();
+        writer.close();
+//        writer.flush();
     }
 }

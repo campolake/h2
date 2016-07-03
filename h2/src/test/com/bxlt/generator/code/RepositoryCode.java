@@ -15,24 +15,28 @@ public class RepositoryCode extends Code  {
     public  RepositoryCode(CodeNameContext codeNameContext) throws IOException {
         super(codeNameContext);
         codeName = context.getRepositoryName();
-        initWriter(context.getRepositoryPath() + "\\" + codeName+ ".java");
+        initWriter(context.getRepositoryPath() + "\\" + codeName + ".java");
         setPackageName(codeNameContext.getRepositoryNamespace());
-        addImport("org.springframework.data.jpa.repository.JpaSpecificationExecutor");
-        addImport("org.springframework.data.jpa.repository.Query;");
-        addImport("org.springframework.data.repository.CrudRepository");
-        addImport("org.springframework.data.repository.query.Param");
-        addImport("com.aims.model."+codeName+"Entity");
-        addImport("java.util.List");
+       // addImport("org.springframework.data.jpa.repository.JpaSpecificationExecutor");
+       // addImport("org.springframework.data.jpa.repository.Query");
+       // addImport("org.springframework.data.repository.CrudRepository");
+        addImport(context.getRepositoryCustomeInterfaceNamespace()+"."+context.getRepositoryCustomeName());
+       // addImport("org.springframework.data.repository.query.Param");
+       // addImport("com.aims.model."+codeName+"Entity");
+        addImport(context.getEntityNamespace()+"."+context.getEntityClassName());
+        addImport("com.cpic.caf.core.repository.EntityRepository");
+       // addImport("java.util.List");
     }
 
 
     @Override
     public void generate() throws IOException {
-        writer.write("package com.aims.repository;");
+        println("package " + context.getRepositoryNamespace() + ";");
         printEmptyLine();
         printImport();
-        String entityName  = codeName + "Entity";
-        println("public interface "+codeName+"Repository extends CrudRepository<"+entityName+", String>, JpaSpecificationExecutor<"+entityName+"> ");
+        printEmptyLine();
+        String entityName  = context.getEntityClassName();
+        println("public interface "+ context.getRepositoryName() +" extends EntityRepository<"+entityName+", String>,"+context.getRepositoryCustomeName());
         println("{");
         printEmptyLine();
         println("}");

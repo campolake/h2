@@ -27,19 +27,19 @@ public class RepositoryCustomCode extends Code  {
 
     @Override
     public void generate() throws IOException {
-        println("package com.aims.repository");
+        println("package " + context.getRepositoryCustomeInterfaceNamespace() + ";");
         printEmptyLine();
         printImport();
 
         printEmptyLine();
-        String name = codeName + "RepositoryCustom";
+        String name = context.getRepositoryCustomeName();
         String entityName = context.getEntityClassName();
 
-        print("public interface " + name);
-        print("{");
-        println("Page<"+entityName+"> query(String hql, Map<String, Object> map, Pageable pageable);");
-        println("List<"+entityName+"> query(String hql, Map<String, Object> map);");
-        print("}");
+        println("public interface " + name);
+        println("{");
+        printlni1("Page<"+entityName+"> query(String hql, Map<String, Object> map, Pageable pageable);");
+        printlni1("List<"+entityName+"> query(String hql, Map<String, Object> map);");
+        println("}");
         flush();
 
     }

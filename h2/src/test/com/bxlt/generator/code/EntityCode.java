@@ -30,18 +30,19 @@ public class EntityCode extends Code {
         addImport("javax.persistence.Id");
         addImport("org.hibernate.validator.constraints.NotEmpty");
         addImport("javax.persistence.Table");
+        addImport("java.io.Serializable");
     }
 
 
     @Override
     public void generate() throws IOException {
-        println("package " + packageName);
+        println("package " + packageName +";");
         printEmptyLine();
         printImport();
         printEmptyLine();
         println("@Entity");
         println("@Table(name = \""+ context.getTableName() +"\")");
-        println("public class " + context.getEntityClassName());
+        println("public class " + context.getEntityClassName() + " implements Serializable");
         println("{");
 
 
@@ -87,17 +88,18 @@ public class EntityCode extends Code {
             String fieldName = c.getName();
             String lowerFieldName = fieldName.toLowerCase();
             String firstUpperFieldName = getFiledColumnName(lowerFieldName);
+            String firstUpperName = getColumnName(lowerFieldName);
             if (typeName == String.class)
             {
                 printlni1("public String get"+firstUpperFieldName + "()");
                 printlni1("{");
-                printlni2("return this." +c.getName() + ";");
+                printlni2("return this." +firstUpperName + ";");
                 printlni1("}");
                 printEmptyLine();
 
-                printlni1("public String set"+firstUpperFieldName + "(String " + lowerFieldName + ")");
+                printlni1("public void set"+firstUpperFieldName + "(String " + lowerFieldName + ")");
                 printlni1("{");
-                printlni2("this." + lowerFieldName + " = " + lowerFieldName + ";");
+                printlni2("this." + firstUpperName + " = " + lowerFieldName + ";");
                 printlni1("}");
                 printEmptyLine();
                 printEmptyLine();
@@ -106,13 +108,13 @@ public class EntityCode extends Code {
             {
                 printlni1("public double get"+firstUpperFieldName + "()");
                 printlni1("{");
-                printlni2("return this." +firstUpperFieldName + ";");
+                printlni2("return this." +firstUpperName + ";");
                 printlni1("}");
                 printEmptyLine();
 
-                printlni1("public String set"+firstUpperFieldName + "(double " + lowerFieldName + ")");
+                printlni1("public void set"+firstUpperFieldName + "(double " + lowerFieldName + ")");
                 printlni1("{");
-                printlni2("this." + lowerFieldName + " = " + lowerFieldName + ";");
+                printlni2("this." + firstUpperName + " = " + lowerFieldName + ";");
                 printlni1("}");
                 printEmptyLine();
                 printEmptyLine();
@@ -121,13 +123,13 @@ public class EntityCode extends Code {
             {
                 printlni1("public int get"+firstUpperFieldName + "()");
                 printlni1("{");
-                printlni2("return this." +lowerFieldName + ";");
+                printlni2("return this." +firstUpperName + ";");
                 printlni1("}");
                 printEmptyLine();
 
-                printlni1("public String set"+ firstUpperFieldName + "(int " + lowerFieldName + ")");
+                printlni1("public void set"+ firstUpperFieldName + "(int " + lowerFieldName + ")");
                 printlni1("{");
-                printlni2("this." +lowerFieldName + " = " + lowerFieldName + ";");
+                printlni2("this." +firstUpperName + " = " + lowerFieldName + ";");
                 printlni1("}");
                 printEmptyLine();
                 printEmptyLine();
@@ -136,13 +138,13 @@ public class EntityCode extends Code {
             {
                 printlni1("public Date get"+ firstUpperFieldName + "()");
                 printlni1("{");
-                printlni2("return this." +lowerFieldName + ";");
+                printlni2("return this." +firstUpperName + ";");
                 printlni1("}");
                 printEmptyLine();
 
-                printlni1("public String set"+firstUpperFieldName + "(Date " + lowerFieldName + ")");
+                printlni1("public void set"+firstUpperFieldName + "(Date " + lowerFieldName + ")");
                 printlni1("{");
-                printlni2("this." + lowerFieldName + " = " + lowerFieldName + ";");
+                printlni2("this." + firstUpperName + " = " + lowerFieldName + ";");
                 printlni1("}");
                 printEmptyLine();
                 printEmptyLine();

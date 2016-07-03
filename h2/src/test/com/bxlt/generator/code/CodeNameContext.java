@@ -53,8 +53,8 @@ public class CodeNameContext {
 
         entityNamespace = baseNamespace + ".entity";
         repositoryNamespace = baseNamespace + ".repository";
-        repositoryCustomeInterfaceNamespace = baseNamespace + ".custom";
-        repositoryImplNamespace = baseNamespace + ".impl";
+        repositoryCustomeInterfaceNamespace = baseNamespace + ".repository.custom";
+        repositoryImplNamespace = baseNamespace + ".repository.impl";
     }
 
     private  String getTableName(String tableName)

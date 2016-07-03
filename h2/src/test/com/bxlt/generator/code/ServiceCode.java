@@ -18,7 +18,7 @@ public class ServiceCode extends Code {
         codeName = context.getServiceName();
         setPackageName(context.getServiceNamespace());
         addImport("com.aims.model."+ codeName);
-        addImport("com.aims.repository.BjShapeRepository");
+        //addImport("com.aims.repository.BjShapeRepository");
     }
 
 

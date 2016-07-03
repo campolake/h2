@@ -19,7 +19,7 @@ public class RepositoryImplCode extends Code {
         setPackageName(context.getRepositoryImplNamespace());
         addImport(context.getEntityNamespace()+"."+context.getEntityClassName()); //Entity
         addImport(context.getRepositoryCustomeInterfaceNamespace()+"."+context.getRepositoryCustomeName());//interface
-        addImport("com.bxlt.jpa.BaseHibernate4QueryDao;");
+        addImport("com.cpic.caf.core.repository.jpa.BaseHibernate4QueryDao");
         addImport("org.springframework.data.domain.Page");
         addImport("org.springframework.data.domain.Pageable");
         addImport("java.util.List");
@@ -29,11 +29,12 @@ public class RepositoryImplCode extends Code {
 
     @Override
     public void generate() throws IOException {
-        print("package "+ "");
+        println("package "+ context.getRepositoryImplNamespace() +";");
+        printEmptyLine();
         printImport();
         printEmptyLine();
         String className = context.getRepositoryImplName();
-        println("public class " + className);
+        println("public class " + className + " extends BaseHibernate4QueryDao<"+context.getEntityClassName()+"> implements "+context.getRepositoryCustomeName());
         println("{");
         printEmptyLine();
         printlni1("@Override");
