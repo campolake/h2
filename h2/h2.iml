@@ -7,7 +7,6 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main" isTestSource="false" />
       <sourceFolder url="file://$MODULE_DIR$/src/test" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/tools" isTestSource="true" />
-      <sourceFolder url="file://$MODULE_DIR$/mytest" isTestSource="false" />
       <excludeFolder url="file://$MODULE_DIR$/target" />
     </content>
     <orderEntry type="inheritedJdk" />
@@ -30,7 +29,7 @@
     <orderEntry type="module-library">
       <library name="Maven: com.sun:tools:1.6">
         <CLASSES>
-          <root url="jar://C:/Program Files/Java/jdk1.8.0_73/lib/tools.jar!/" />
+          <root url="jar://C:/Program Files/Java/jdk1.8.0_25/lib/tools.jar!/" />
         </CLASSES>
         <JAVADOC />
         <SOURCES />
