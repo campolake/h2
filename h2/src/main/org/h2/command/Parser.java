@@ -251,6 +251,8 @@ public class Parser {
      */
     public Command prepareCommand(String sql) {
         try {
+            System.out.println("----exec-------");
+            System.out.println(sql);
             Prepared p = parse(sql);
             boolean hasMore = isToken(";");
             if (!hasMore && currentTokenType != END) {
@@ -4208,6 +4210,15 @@ public class Parser {
         } else if (readIf("LINKED")) {
             return parseCreateLinkedTable(false, false, force);
         }
+        //wjw add
+        else if (readIf("INDEX"))
+        {
+            while(!readIf(";"))
+            {
+                read();
+            }
+        }
+
         // tables or linked tables
         boolean memory = false, cached = false;
         if (readIf("MEMORY")) {

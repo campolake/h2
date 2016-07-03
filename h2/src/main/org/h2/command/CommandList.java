@@ -6,6 +6,8 @@
 package org.h2.command;
 
 import java.util.ArrayList;
+
+import org.h2.command.ddl.SetComment;
 import org.h2.expression.ParameterInterface;
 import org.h2.result.ResultInterface;
 
@@ -30,6 +32,7 @@ class CommandList extends Command {
 
     private void executeRemaining() {
         Command remainingCommand = session.prepareLocal(remaining);
+
         if (remainingCommand.isQuery()) {
             remainingCommand.query(0);
         } else {

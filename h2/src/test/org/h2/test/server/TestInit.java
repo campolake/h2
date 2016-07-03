@@ -5,6 +5,7 @@
  */
 package org.h2.test.server;
 
+import java.io.File;
 import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.io.Writer;
@@ -58,9 +59,13 @@ public class TestInit extends TestBase {
 
         Connection conn = getConnection("initDb;");
         Statement stat = conn.createStatement();
-        stat.executeUpdate("create table test(id int identity, name varchar);");
-        stat.executeUpdate("insert into test(name) values('cat');");
-        stat.executeUpdate("insert into test(name) values('dog');");
+
+        String ddlFile = "D:\\javaout\\DDL.sql";
+        String ddl = com.bxlt.generator.FileUtils.readUTF8FileToString(new File(ddlFile));
+//        stat.executeUpdate(ddl);
+        stat.executeUpdate("create table test(id int identity, name varchar(50));");
+//        stat.executeUpdate("insert into test(name) values('cat');");
+//        stat.executeUpdate("insert into test(name) values('dog');");
 
         // Confirm our scripts have run by loading the data they inserted
         ResultSet rs = stat.executeQuery("select name from test order by name");
