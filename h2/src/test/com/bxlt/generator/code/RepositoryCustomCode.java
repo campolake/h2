@@ -14,9 +14,13 @@ public class RepositoryCustomCode extends Code  {
 
     public RepositoryCustomCode (CodeNameContext codeNameContext) throws IOException {
         super(codeNameContext);
+        initWriter(context.getRepositoryCustomPath() + "\\" + context.getRepositoryCustomeName() + ".java");
+        codeName = context.getRepositoryCustomeName();
+
         setPackageName(codeNameContext.getRepositoryCustomeInterfaceNamespace());
         addImport("org.springframework.data.domain.Page");
         addImport("org.springframework.data.domain.Pageable");
+        addImport(context.getEntityNamespace() + "." + context.getEntityClassName());
         addImport("java.util.List");
         addImport("java.util.Map");
     }
@@ -24,16 +28,19 @@ public class RepositoryCustomCode extends Code  {
     @Override
     public void generate() throws IOException {
         println("package com.aims.repository");
+        printEmptyLine();
         printImport();
+
+        printEmptyLine();
         String name = codeName + "RepositoryCustom";
-        String entityName = codeName + "Entity";
+        String entityName = context.getEntityClassName();
 
         print("public interface " + name);
         print("{");
         println("Page<"+entityName+"> query(String hql, Map<String, Object> map, Pageable pageable);");
         println("List<"+entityName+"> query(String hql, Map<String, Object> map);");
         print("}");
-
+        flush();
 
     }
 

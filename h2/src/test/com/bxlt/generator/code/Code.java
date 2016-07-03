@@ -24,10 +24,13 @@ public abstract  class Code {
     Writer writer;
     protected Code(CodeNameContext codeNameContext) throws IOException {
 
-        writer =  new FileWriter(""+ ".java");
         context = codeNameContext;
         this.table = context.getTable();
         this.columns = table.getColumns();
+    }
+
+    protected void initWriter(String path) throws IOException {
+        writer = new FileWriter(path);
     }
 
     protected  void printImport() throws IOException {

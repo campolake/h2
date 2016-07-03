@@ -14,6 +14,8 @@ public class ServiceCode extends Code {
 
     public ServiceCode(CodeNameContext context) throws IOException {
         super(context);
+        initWriter(context.getServicePath() + "\\" + context.getServiceName() + ".java");
+        codeName = context.getServiceName();
         setPackageName(context.getServiceNamespace());
         addImport("com.aims.model."+ codeName);
         addImport("com.aims.repository.BjShapeRepository");
@@ -25,6 +27,15 @@ public class ServiceCode extends Code {
         println("package com.aims.service");
         printImport();
         printEmptyLine();
-        println("");
+        println("@Component");
+        println("public class " + context.getServiceName());
+        println("{");
+        printEmptyLine();
+        printlni1("@Autowired");
+        printlni1(context.getRepositoryName() + " " + context.getRepositoryName().substring(0,1).toLowerCase() +
+                    context.getRepositoryName().substring(1) + ";");
+        printEmptyLine();
+        println("}");
+        flush();
     }
 }
