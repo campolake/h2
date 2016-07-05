@@ -46,6 +46,8 @@ public class CodeGenerator {
             implCode.generate();
             ServiceCode serviceCode = new ServiceCode(context);
             serviceCode.generate();
+            ServiceImplCode serviceImplCode= new ServiceImplCode(context);
+            serviceImplCode.generate();
         }
 
     }
