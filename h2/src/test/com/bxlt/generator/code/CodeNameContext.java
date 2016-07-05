@@ -17,6 +17,7 @@ public class CodeNameContext {
     private String repositoryCustomeName;
     private String repositoryImplName;
     private String serviceName;
+    private String serviceImplName;
 
     private String baseNamespace;
     private String entityNamespace;
@@ -24,7 +25,7 @@ public class CodeNameContext {
     private String repositoryCustomeInterfaceNamespace;
     private String repositoryImplNamespace;
     private String serviceNamespace;
-
+    private String serviceImplNamespace;
 
     private String basePath;
     private String entityPath;
@@ -32,6 +33,7 @@ public class CodeNameContext {
     private String reposotryImplPath;
     private String repositoryCustomPath;
     private String servicePath;
+    private String serviceImplPath;
 
     /**
      *
@@ -50,11 +52,14 @@ public class CodeNameContext {
         repositoryCustomeName = simpleTableName + "RepositoryCustom";
         repositoryImplName = simpleTableName + "RepositoryImpl";
         serviceName = simpleTableName + "Service";
+        serviceImplName=simpleTableName+"ServiceImpl";
 
         entityNamespace = baseNamespace + ".entity";
         repositoryNamespace = baseNamespace + ".repository";
         repositoryCustomeInterfaceNamespace = baseNamespace + ".repository.custom";
         repositoryImplNamespace = baseNamespace + ".repository.impl";
+        serviceNamespace=baseNamespace+".service";
+        serviceImplNamespace=baseNamespace+".service.impl";
     }
 
     private  String getTableName(String tableName)
@@ -91,6 +96,11 @@ public class CodeNameContext {
         File f5 =  new File(servicePath);
         if (!f5.exists())
             f5.mkdir();
+        serviceImplPath=basePath+"\\serviceImpl";
+        File f6=new File(serviceImplPath);
+        if(!f6.exists()){
+            f6.mkdir();
+        }
     }
 
     public String getTableName() {
@@ -244,5 +254,29 @@ public class CodeNameContext {
 
     public void setServicePath(String servicePath) {
         this.servicePath = servicePath;
+    }
+
+    public String getServiceImplName() {
+        return serviceImplName;
+    }
+
+    public void setServiceImplName(String serviceImplName) {
+        this.serviceImplName = serviceImplName;
+    }
+
+    public String getServiceImplNamespace() {
+        return serviceImplNamespace;
+    }
+
+    public void setServiceImplNamespace(String serviceImplNamespace) {
+        this.serviceImplNamespace = serviceImplNamespace;
+    }
+
+    public String getServiceImplPath() {
+        return serviceImplPath;
+    }
+
+    public void setServiceImplPath(String serviceImplPath) {
+        this.serviceImplPath = serviceImplPath;
     }
 }
