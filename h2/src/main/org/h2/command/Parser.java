@@ -199,6 +199,10 @@ public class Parser {
     private int[] characterTypes;
     private int currentTokenType;
     private String currentToken;
+    //用`、[]、“包围起来的字符串所代表的Token会使得currentTokenQuoted=true
+    //如"CREATE or `REPLACE` TABLE IF NOT EXISTS
+    //expected = currentToken = REPLACE
+    //currentTokenQuoted = true
     private boolean currentTokenQuoted;
     private Value currentValue;
     private String originalSQL;
@@ -234,6 +238,7 @@ public class Parser {
      * @param sql the SQL statement to parse
      * @return the prepared object
      */
+    //比如在初始化Database时要重建数据库对象，只有单条SQL
     public Prepared prepare(String sql) {
         Prepared p = parse(sql);
         p.prepare();
@@ -243,16 +248,17 @@ public class Parser {
         return p;
     }
 
+
     /**
      * Parse a statement or a list of statements, and prepare it for execution.
      *
      * @param sql the SQL statement to parse
      * @return the command object
+     * 比如远程客户端发起的调用，见org.h2.server.TcpServerThread.process()，可以有多条SQL
      */
+
     public Command prepareCommand(String sql) {
         try {
-            System.out.println("----exec-------");
-            System.out.println(sql);
             Prepared p = parse(sql);
             boolean hasMore = isToken(";");
             if (!hasMore && currentTokenType != END) {
@@ -280,6 +286,8 @@ public class Parser {
 
     /**
      * Parse the statement, but don't prepare it for execution.
+     * 除此类外，只看到在org.h2.command.CommandContainer.recompileIfRequired()中使用
+     *
      *
      * @param sql the SQL statement to parse
      * @return the prepared object
@@ -288,12 +296,17 @@ public class Parser {
         Prepared p;
         try {
             // first, try the fast variant
+            //大多数情况下SQL都是正确的，所以这里做了些优化: 默认不使用expectedList，当出现错误时捕获DbException，
+            //如果是语法错误那么再解析一次，并用expectedList记录SQL在语法层面缺了哪些东西，
+            //如果是非语法错误，则把SQL关联到异常，直接抛出异常。
+            //如果不起用这个优化，那么因为频繁调用readIf->addExpected会导致expectedList变得很大
             p = parse(sql, false);
         } catch (DbException e) {
             if (e.getErrorCode() == ErrorCode.SYNTAX_ERROR_1) {
                 // now, get the detailed exception
                 p = parse(sql, true);
             } else {
+                //比如update时如果表名不存在就会是ErrorCode.TABLE_OR_VIEW_NOT_FOUND_1
                 throw e.addSQL(sql);
             }
         }
@@ -343,6 +356,7 @@ public class Parser {
                 c = parseCall();
                 break;
             case '(':
+                //比较特殊，没有readIf，而是在parseSelectSub()中readIf
                 c = parseSelect();
                 break;
             case 'a':
@@ -398,6 +412,7 @@ public class Parser {
                 break;
             case 'f':
             case 'F':
+                //比较特殊，没有readIf，而是在parseSelectSub()中readIf
                 if (isToken("FROM")) {
                     c = parseSelect();
                 }
@@ -448,6 +463,7 @@ public class Parser {
                 break;
             case 's':
             case 'S':
+                //比较特殊，没有readIf，而是在parseSelectSub()中readIf
                 if (isToken("SELECT")) {
                     c = parseSelect();
                 } else if (readIf("SET")) {
@@ -627,6 +643,8 @@ public class Parser {
         }
         String procedureName = readAliasIdentifier();
         if (readIf("(")) {
+            //如PREPARE mytest (int, long, date) AS select * from ExecuteProcedureTest
+            //这个list其实没使用
             ArrayList<Column> list = New.arrayList();
             for (int i = 0;; i++) {
                 Column column = parseColumnForTable("C" + i, true);
@@ -790,6 +808,7 @@ public class Parser {
         return command;
     }
 
+    //只用于Delete和Update，Delete和Update只允许单表
     private TableFilter readSimpleTableFilter(int orderInFrom) {
         Table table = readTableOrView();
         String alias = null;
@@ -808,6 +827,7 @@ public class Parser {
     private Delete parseDelete() {
         Delete command = new Delete(session);
         Expression limit = null;
+        //为什么要在这调用optimize见org.h2.command.dml.Delete.prepare()的注释
         if (readIf("TOP")) {
             limit = readTerm().optimize(session);
         }
@@ -1000,6 +1020,8 @@ public class Parser {
         return prep;
     }
 
+    //isSelect有回溯,读完所有左括号，然后看下一个token是否是select、from
+    //然后再从调用isSelect前的lastParseIndex开始解析，当前token是调用isSelect前的token.
     private boolean isSelect() {
         int start = lastParseIndex;
         while (readIf("(")) {
@@ -1179,12 +1201,15 @@ public class Parser {
         }
         return command;
     }
-
+    //最开始是从parseSelectSimpleFromPart方法触发
     private TableFilter readTableFilter(boolean fromOuter) {
         Table table;
         String alias = null;
         if (readIf("(")) {
-            if (isSelect()) {
+            //在from后直接跟左括号，如"from (select 1)"
+            //isSelect有回溯,读完所有左括号，然后看下一个token是否是select、from
+            //然后再从调用isSelect前的lastParseIndex开始解析，当前token是调用isSelect前的token.
+            if (isSelect()) {//如"FROM ((select 1) union (select 1))";
                 Query query = parseSelectUnion();
                 read(")");
                 query.setParameterList(New.arrayList(parameters));
@@ -1199,6 +1224,8 @@ public class Parser {
                 table = TableView.createTempView(s, session.getUser(), alias,
                         query, currentSelect);
             } else {
+                //如"FROM (mytable) SELECT * "
+                //"FROM (mytable1 RIGHT OUTER JOIN mytable2 ON mytable1.id1=mytable2.id2) AS t SELECT * "
                 TableFilter top;
                 if (database.getSettings().nestedJoins) {
                     top = readTableFilter(false);
@@ -1215,7 +1242,7 @@ public class Parser {
                 }
                 return top;
             }
-        } else if (readIf("VALUES")) {
+        } else if (readIf("VALUES")) {//如"SELECT * FROM VALUES(1, 'Hello'), (2, 'World')"
             table = parseValuesTable(0).getTable();
         } else {
             String tableName = readIdentifierWithSchema(null);
@@ -1229,6 +1256,7 @@ public class Parser {
                 foundLeftBracket = false;
             }
             if (foundLeftBracket) {
+                //如"FROM SYSTEM_RANGE(1,100) SELECT * ";
                 Schema mainSchema = database.getSchema(Constants.SCHEMA_MAIN);
                 if (equalsToken(tableName, RangeTable.NAME)
                         || equalsToken(tableName, RangeTable.ALIAS)) {
@@ -1245,6 +1273,9 @@ public class Parser {
                         table = new RangeTable(mainSchema, min, max, false);
                     }
                 } else {
+                    //如"FROM TABLE(ID INT=(1, 2), NAME VARCHAR=('Hello', 'World')) SELECT * "
+                    //这个不合法，的FunctionTable中会抛错sql = "FROM USER() SELECT * "; //函数返回值类型必须是RESULT_SET
+                    //只有CSVREAD、LINK_SCHEMA、TABLE、TABLE_DISTINCT这4个函数的返回值类型是RESULT_SET
                     Expression expr = readFunction(schema, tableName);
                     if (!(expr instanceof FunctionCall)) {
                         throw getSyntaxError();
@@ -1256,11 +1287,11 @@ public class Parser {
                     table = new FunctionTable(mainSchema, session, expr, call);
                 }
             } else if (equalsToken("DUAL", tableName)) {
-                table = getDualTable(false);
+                table = getDualTable(false);//如"FROM DUAL SELECT * "
             } else if (database.getMode().sysDummy1 &&
                     equalsToken("SYSDUMMY1", tableName)) {
-                table = getDualTable(false);
-            } else {
+                table = getDualTable(false);//如"FROM SYSDUMMY1 SELECT * "，要适当设置MODE参数
+            } else {//正常的 from tableName语法
                 table = readTableOrView(tableName);
             }
         }
@@ -1506,11 +1537,17 @@ public class Parser {
         command.setIfExists(ifExists);
         return command;
     }
-
+    //如果RIGHT、LEFT、INNER、JOIN这5种JOIN后面没有直接接ON就会出现递归调用readJoin的情况，
+    //如: SELECT * FROM t1 RIGHT OUTER JOIN t2 LEFT OUTER JOIN t3 INNER JOIN t4 JOIN t5 CROSS JOIN t6 NATURAL JOIN t7
+    //加ON的话虽然也会递归调用readJoin，但因为紧接着的token是ON，所以实际上readJoin什么都不做
+    //参见<<数据库系统基础教程>>p24、p25、p26、p129、p163
     private TableFilter readJoin(TableFilter top, Select command,
-            boolean nested, boolean fromOuter) {
+            boolean nested, boolean fromOuter) {//嵌套、外部
+        //fromOuter这个参数只有从LEFT/RIGHT OUTER进入readJoin为true
+        //nested这个参数只有从LEFT OUTER进入readJoin为true
         boolean joined = false;
-        TableFilter last = top;
+        TableFilter last = top;//last只对NATURAL JOIN有用
+        //NESTED_JOINS参数默认是true
         boolean nestedJoins = database.getSettings().nestedJoins;
         while (true) {
             if (readIf("RIGHT")) {
@@ -1524,8 +1561,10 @@ public class Parser {
                 if (readIf("ON")) {
                     on = readExpression();
                 }
+                //当t1 RIGHT OUTER JOIN t2时，t2放在前面，t1嵌套在一个DualTable中，然后t2去join这个DualTable
                 if (nestedJoins) {
                     top = getNested(top);
+                    //RIGHT OUTER和LEFT OUTER时，addJoin的第二个参数都是true
                     newTop.addJoin(top, true, false, on);
                 } else {
                     newTop.addJoin(top, true, false, on);
@@ -1540,6 +1579,9 @@ public class Parser {
                 if (nestedJoins) {
                     join = readJoin(join, command, true, true);
                 } else {
+                    //当nestedJoins为false时,
+                    //对于SELECT * FROM JoinTest1 LEFT OUTER JOIN JoinTest2 LEFT OUTER JOIN JoinTest3
+                    //实际上是JoinTest1.join => JoinTest3.join => JoinTest2
                     top = readJoin(top, command, false, true);
                 }
                 Expression on = null;
@@ -1550,7 +1592,7 @@ public class Parser {
                 last = join;
             } else if (readIf("FULL")) {
                 throw getSyntaxError();
-            } else if (readIf("INNER")) {
+            } else if (readIf("INNER")) {//INNER JOIN或JOIN就是θ连接(在笛卡儿积积之上加过滤条件)
                 read("JOIN");
                 joined = true;
                 TableFilter join = readTableFilter(fromOuter);
@@ -1579,8 +1621,8 @@ public class Parser {
                     top.addJoin(join, fromOuter, false, on);
                 }
                 last = join;
-            } else if (readIf("CROSS")) {
-                read("JOIN");
+            } else if (readIf("CROSS")) {//CROSS JOIN和NATURAL JOIN后面不能再readJoin，因为没有ON子句，但是可以接其他JOIN
+                read("JOIN");//CROSS JOIN就是求笛卡儿积
                 joined = true;
                 TableFilter join = readTableFilter(fromOuter);
                 if (nestedJoins) {
@@ -1589,7 +1631,7 @@ public class Parser {
                     top.addJoin(join, fromOuter, false, null);
                 }
                 last = join;
-            } else if (readIf("NATURAL")) {
+            } else if (readIf("NATURAL")) {//CROSS JOIN和NATURAL JOIN后面不能再readJoin，因为没有ON子句，但是可以接其他JOIN
                 read("JOIN");
                 joined = true;
                 TableFilter join = readTableFilter(fromOuter);
@@ -1598,7 +1640,10 @@ public class Parser {
                 String tableSchema = last.getTable().getSchema().getName();
                 String joinSchema = join.getTable().getSchema().getName();
                 Expression on = null;
-                for (Column tc : tableCols) {
+                //取左边和右边列名相同的列来作为on条件，用等于关系表达式来表示，如果有多个这样的相同列，则用AND拼装
+                //如: SELECT t1.id, t1.b FROM JoinTest1 t1 NATURAL JOIN JoinTest4 t2
+                //则: on = ((PUBLIC.T1.ID = PUBLIC.T2.ID) AND (PUBLIC.T1.NAME = PUBLIC.T2.NAME))
+                for (Column tc : tableCols) {//从左边的表开始
                     String tableColumnName = tc.getName();
                     for (Column c : joinCols) {
                         String joinColumnName = c.getName();
@@ -1621,6 +1666,13 @@ public class Parser {
                         }
                     }
                 }
+                //当NESTED_JOINS参数为true是下面这条sql的JoinTest2 JOIN JoinTest3就满足这个if条件
+                //因为JoinTest1 LEFT OUTER JOIN JoinTest2会使得nested为true
+                //SELECT rownum, * FROM JoinTest1 LEFT OUTER JOIN JoinTest2 JOIN JoinTest3
+                //相当于:
+                //JoinTest1.join => TableFilter(SYSTEM_JOIN_xxx).nestedJoin => TableFilter(JoinTest2).join => TableFilter(JoinTest3)
+                //也就是先算JoinTest2 JOIN JoinTest3(假设结果是R)
+                //然后JoinTest1再于R进行LEFT OUTER JOIN
                 if (nestedJoins) {
                     top.addJoin(join, false, nested, on);
                 } else {
@@ -1711,12 +1763,21 @@ public class Parser {
         return command;
     }
 
+    /*
+    对于简单的sql，如select name1 from mytable1 order by name1
+    parseSelectSub()负责解析select name1 from mytable1
+    parseSelectUnionExtension负责解析 order by name1
+
+    如果union sql是select name1 from mytable1 union select name2 from mytable2 order by name1
+    parseSelectSub()负责解析select name1 from mytable1
+    parseSelectUnionExtension负责解析 union select name2 from mytable2 order by name1
+   */
     private Query parseSelectUnion() {
         int start = lastParseIndex;
         Query command = parseSelectSub();
         return parseSelectUnionExtension(command, start, false);
     }
-
+    //只有在parseSelectUnion中调用，unionOnly总为false
     private Query parseSelectUnionExtension(Query command, int start,
             boolean unionOnly) {
         while (true) {
@@ -1750,7 +1811,12 @@ public class Parser {
         setSQL(command, null, start);
         return command;
     }
-
+    //解析sql中的LIMIT、ordey by、FOR UPDATE
+    //如果是union时LIMIT、ordey by、FOR UPDATE不能放在子句中，要放在最后
+    //比如这条是错误的:
+    //sql = "select name1 from mytable1 order by name1 union select name2 from mytable2";
+    //要改成这样:
+    //sql = "select name1 from mytable1 union select name2 from mytable2 order by name1";
     private void parseEndOfQuery(Query command) {
         if (readIf("ORDER")) {
             read("BY");
@@ -1898,6 +1964,7 @@ public class Parser {
         return select;
     }
 
+    //只处理SELECT语句中的Select Expression
     private void parseSelectSimpleFromPart(Select command) {
         do {
             TableFilter filter = readTableFilter(false);
@@ -3227,16 +3294,18 @@ public class Parser {
         }
     }
 
+
+    //向后读一个字符
     private void read() {
-        currentTokenQuoted = false;
-        if (expectedList != null) {
+        currentTokenQuoted = false; //没有‘' [ 等符号括起来
+        if (expectedList != null) { //清空expectedList
             expectedList.clear();
         }
         int[] types = characterTypes;
         lastParseIndex = parseIndex;
         int i = parseIndex;
         int type = types[i];
-        while (type == 0) {
+        while (type == 0) { //一直读到不是0为止
             type = types[++i];
         }
         int start = i;
@@ -3244,7 +3313,7 @@ public class Parser {
         char c = chars[i++];
         currentToken = "";
         switch (type) {
-        case CHAR_NAME:
+        case CHAR_NAME://如果是sql标识的一部分，则通过空格来分开
             while (true) {
                 type = types[i];
                 //除了CHAR_NAME和CHAR_VALUE之外都是token的分割字符
@@ -3290,7 +3359,7 @@ public class Parser {
             currentTokenType = getSpecialType(currentToken);
             parseIndex = i;
             return;
-        case CHAR_SPECIAL_1:
+        case CHAR_SPECIAL_1://如果是分割符，则通过分割符截取token
             currentToken = sqlCommand.substring(start, i);
             currentTokenType = getSpecialType(currentToken);
             parseIndex = i;
@@ -3500,7 +3569,7 @@ public class Parser {
         int lastType = 0;
         for (int i = 0; i < len; i++) {
             char c = command[i];
-            int type = 0;
+            int type = 0;//默认值为0，包括的字符有
             switch (c) {
             case '/'://跳过多行注释
                 if (command[i + 1] == '*') {

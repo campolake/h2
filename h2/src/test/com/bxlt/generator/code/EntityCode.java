@@ -79,8 +79,6 @@ public class EntityCode extends Code {
         }
 
         printEmptyLine();
-        printEmptyLine();
-        printEmptyLine();
 
         for(Column c:columns)
         {

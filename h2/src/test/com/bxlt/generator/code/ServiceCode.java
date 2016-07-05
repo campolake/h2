@@ -17,14 +17,14 @@ public class ServiceCode extends Code {
         initWriter(context.getServicePath() + "\\" + context.getServiceName() + ".java");
         codeName = context.getServiceName();
         setPackageName(context.getServiceNamespace());
-        addImport("com.aims.model."+ codeName);
+//        addImport(context.getene);
         //addImport("com.aims.repository.BjShapeRepository");
     }
 
 
     @Override
     public void generate() throws IOException {
-        println("package com.aims.service");
+        println("package " + context.getServiceNamespace() + ";");
         printImport();
         printEmptyLine();
         println("@Component");
