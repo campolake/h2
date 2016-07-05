@@ -63,7 +63,7 @@ public class TestInit extends TestBase {
         String ddlFile = "D:\\javaout\\DDL.sql";
         String ddl = com.bxlt.generator.FileUtils.readUTF8FileToString(new File(ddlFile));
 //        stat.executeUpdate(ddl);
-        stat.executeUpdate("create table test(id int identity, name varchar(50));");
+        stat.executeUpdate("create table test(id number(19), name varchar(50));");
 //        stat.executeUpdate("insert into test(name) values('cat');");
 //        stat.executeUpdate("insert into test(name) values('dog');");
 

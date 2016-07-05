@@ -444,19 +444,18 @@ public class SqlParser {
         Table t = new Table();
         String name = currentToken;
         read();
-        readIf("(");
-        while(!readIf(";"))
-        {
-            Column col = parseColumn();
-            t.addColumn(col);
-            readIf(")");
-            if(readIf("TABLESPACE"))
-            {
-                while(!readIf(";"))
-                {
-                    read();
-                }
-            }
+        if(readIf("(")) {
+            do{
+                Column col = parseColumn();
+                t.addColumn(col);
+//                readIf(")");
+//                if (readIf("TABLESPACE")) {
+//                    while (!readIf(";")) {
+//                        read();
+//                    }
+//                }
+            }while(readIfMore());
+
         }
         t.setName(name);
         return t;
@@ -473,17 +472,17 @@ public class SqlParser {
         {
             if(readIf("("))
             {
-                len =  currentValue.getInt();
-                read();
+                len = readInt();
                 if (readIf(","))
                 {
                     type = double.class;
+                    readInt();
                 }
                 else
                 {
                     type = int.class;
                 }
-                readIf(")");
+                read(")");//此时必须是),否则报错
             }
 
         }else if(readIf("VARCHAR2") || readIf("VARCHAR"))
@@ -491,9 +490,8 @@ public class SqlParser {
             type = String.class;
             if(readIf("("))
             {
-                len =  currentValue.getInt();
-                read();
-                readIf(")");
+                len =  readInt();
+                read(")");
             }
         }
         else if(readIf("DATE"))
@@ -508,12 +506,38 @@ public class SqlParser {
         {
             empty = false;
         }
-        readIf(",");
 
         return new Column(colName,empty,type,"",len);
     }
 
 
+    private boolean readIfMore() {
+        if (readIf(",")) {
+            return !readIf(")");
+        }
+        read(")");
+        return false;
+    }
+
+    private int readInt() {
+        boolean minus = false;
+        if (currentTokenType == MINUS) {
+            minus = true;
+            read();
+        } else if (currentTokenType == PLUS) {
+            read();
+        }
+        if (currentTokenType != VALUE) {
+            throw DbException.getSyntaxError(sqlCommand, parseIndex, "integer");
+        }
+        if (minus) {
+            // must do that now, otherwise Integer.MIN_VALUE would not work
+            currentValue = currentValue.negate();
+        }
+        int i = currentValue.getInt();
+        read();
+        return i;
+    }
 
     private boolean equalsToken(String a, String b) {
         if (a == null) {
@@ -534,6 +558,26 @@ public class SqlParser {
         }
         addExpected(token);
         return false;
+    }
+
+    private long readLong() {
+        boolean minus = false;
+        if (currentTokenType == MINUS) {
+            minus = true;
+            read();
+        } else if (currentTokenType == PLUS) {
+            read();
+        }
+        if (currentTokenType != VALUE) {
+            throw DbException.getSyntaxError(sqlCommand, parseIndex, "long");
+        }
+        if (minus) {
+            // must do that now, otherwise Long.MIN_VALUE would not work
+            currentValue = currentValue.negate();
+        }
+        long i = currentValue.getLong();
+        read();
+        return i;
     }
 
     private void addExpected(String token) {
