@@ -51,9 +51,9 @@ public abstract class TestBase {
     public void start() throws Exception {
         initDefaults();
         init();
-        if (url == null)
-            url = "jdbc:h2:tcp://localhost:9092/mydb";
-
+//        if (url == null)
+//            url = "jdbc:h2:tcp://localhost:9092/mydb";
+        url = "jdbc:h2:file:./target/mytest/baseDir/mydb2";
         conn = DriverManager.getConnection(url, prop);
         // conn.setAutoCommit(false);
         stmt = conn.createStatement();

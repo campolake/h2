@@ -33,7 +33,7 @@ public class JDBCExample {
 
         String url = "jdbc:h2:tcp://localhost:9092/mydb";
         url = "jdbc:h2:file:./target/mytest/baseDir/mydb2";
-        url = "jdbc:h2:mem:mydb3";
+//        url = "jdbc:h2:mem:mydb3";
 
         Connection conn = DriverManager.getConnection(url, "sa", "");
         return conn;

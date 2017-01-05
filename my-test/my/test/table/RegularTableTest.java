@@ -7,7 +7,9 @@ import my.test.TestBase;
 
 public class RegularTableTest extends TestBase {
 	public static void main(String[] args) throws Exception {
-		new RegularTableTest().start();
+		RegularTableTest t = new RegularTableTest();
+		t.start();
+		t.test();
 	}
 
 	@Override
